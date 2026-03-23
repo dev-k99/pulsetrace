@@ -1,6 +1,5 @@
 ---
 title: PulseTrace
-emoji: 📊
 colorFrom: green
 colorTo: blue
 sdk: docker
@@ -24,13 +23,16 @@ app_port: 7860
   OpenTelemetry-style traces · Real-time evaluation metrics · Agent health monitoring · Structured logs
 </p>
 
+<p align="center">
+  <a href="https://kwanele99-pulsetrace.hf.space" target="_blank">
+    <img src="https://img.shields.io/badge/Live%20Demo-HuggingFace%20Spaces-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black" alt="Live Demo">
+  </a>
+</p>
+
 ---
 
-<!-- Screenshot placeholder — replace with your own after first run -->
-> **Screenshot**
-> ```
-> [Live Traces tab — OTel waterfall chart + interactive trace table]
-> ```
+![Dashboard](<screenshot/live dashboard.png>)
+![charts](screenshot/charts.png)
 
 ---
 
@@ -69,6 +71,8 @@ Open [http://localhost:8501](http://localhost:8501) — the dashboard seeds itse
 2. Select **Docker** as the SDK
 3. Push this repository to the Space
 4. The app will be live at `https://huggingface.co/spaces/<your-username>/pulsetrace`
+
+**Live instance:** [https://kwanele99-pulsetrace.hf.space](https://kwanele99-pulsetrace.hf.space)
 
 > **Note:** HuggingFace Spaces free tier uses ephemeral storage — the SQLite database resets on each restart. The app auto-seeds itself every time, so this is seamless.
 
