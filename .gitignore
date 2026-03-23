@@ -1,0 +1,46 @@
+# ─── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+*.egg-info/
+dist/
+build/
+*.egg
+MANIFEST
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# ─── Virtual Environments ────────────────────────────────────────────────────
+.env
+.venv
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# ─── Streamlit ───────────────────────────────────────────────────────────────
+# Keep config.toml (required for deployment), ignore secrets only
+.streamlit/secrets.toml
+
+# ─── Database (runtime artifact) ─────────────────────────────────────────────
+*.db
+*.db-shm
+*.db-wal
+
+# ─── IDE ──────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ─── OS ───────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── Logs ─────────────────────────────────────────────────────────────────────
+*.log
