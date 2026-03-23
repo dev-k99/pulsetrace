@@ -25,6 +25,9 @@ COPY --chown=user . .
 # Ensure the .streamlit directory is present (config.toml is committed)
 RUN mkdir -p .streamlit
 
+# Give the non-root user write access to /app so SQLite can create pulsetrace.db
+RUN chown -R user:user /app
+
 # ── Switch to non-root user for runtime
 USER user
 
