@@ -48,6 +48,17 @@ st.set_page_config(
 _CSS = """
 <style>
 
+/* ── Animations ───────────────────────────────────────────────────────────── */
+@keyframes fade-up {
+    from { opacity: 0; transform: translateY(7px); }
+    to   { opacity: 1; transform: translateY(0);   }
+}
+@keyframes live-pulse {
+    0%   { box-shadow: 0 0 0 0   rgba(0,255,157,0.6); }
+    70%  { box-shadow: 0 0 0 8px rgba(0,255,157,0);   }
+    100% { box-shadow: 0 0 0 0   rgba(0,255,157,0);   }
+}
+
 /* ── Reset & base ─────────────────────────────────────────────────────────── */
 [data-testid="stAppViewContainer"],
 [data-testid="stMain"] {
@@ -111,7 +122,7 @@ _CSS = """
     font-family: monospace;
     color: #666;
 }
-.dot-ok   { width:7px;height:7px;border-radius:50%;background:#00ff9d;display:inline-block;box-shadow:0 0 4px #00ff9d66; }
+.dot-ok   { width:7px;height:7px;border-radius:50%;background:#00ff9d;display:inline-block;animation:live-pulse 2.4s ease-in-out infinite; }
 .dot-warn { width:7px;height:7px;border-radius:50%;background:#ffaa00;display:inline-block;box-shadow:0 0 4px #ffaa0066; }
 .dot-err  { width:7px;height:7px;border-radius:50%;background:#ff4444;display:inline-block;box-shadow:0 0 4px #ff444466; }
 
@@ -162,10 +173,11 @@ _CSS = """
 }
 [data-testid="stTabs"] [role="tab"] {
     font-family: monospace !important;
-    font-size: 0.82rem;
-    letter-spacing: 0.05em;
+    font-size: 0.76rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     color: #4a5568 !important;
-    padding: 10px 18px;
+    padding: 10px 20px;
     border-radius: 0;
     transition: color 0.15s;
 }
@@ -206,11 +218,13 @@ _CSS = """
     padding: 20px 22px 16px;
     position: relative;
     overflow: hidden;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+    animation: fade-up 0.35s ease;
 }
 .kpi-card:hover {
-    border-color: rgba(0,255,157,0.28);
-    box-shadow: 0 4px 24px rgba(0,255,157,0.06);
+    border-color: rgba(0,255,157,0.3);
+    box-shadow: 0 6px 28px rgba(0,255,157,0.07);
+    transform: translateY(-2px);
 }
 .kpi-card::before {
     content: '';
@@ -218,32 +232,31 @@ _CSS = """
     top: 0; left: 0; right: 0;
     height: 2px;
     background: linear-gradient(90deg, #00ff9d 0%, transparent 100%);
-    opacity: 0.6;
+    opacity: 0.7;
 }
 .kpi-value {
     font-size: 2rem;
     font-weight: 700;
-    color: #00ff9d;
+    color: #f0f4ff;
     font-family: monospace;
     line-height: 1;
     margin-bottom: 8px;
     letter-spacing: -0.02em;
 }
 .kpi-label {
-    font-size: 0.68rem;
-    color: #4a5568;
+    font-size: 0.65rem;
+    color: #3d4a5c;
     font-family: monospace;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.14em;
 }
 .kpi-delta {
     font-size: 0.72rem;
     font-family: monospace;
     margin-top: 10px;
-    opacity: 0.8;
 }
 .kpi-delta-pos { color: #00ff9d; }
-.kpi-delta-neg { color: #ff4444; }
+.kpi-delta-neg { color: #ff5555; }
 
 /* ── Page header ─────────────────────────────────────────────────────────── */
 .page-title {
@@ -354,6 +367,7 @@ _CSS = """
     border: 1px solid rgba(255,255,255,0.06);
     border-radius: 8px;
     overflow: hidden;
+    animation: fade-up 0.25s ease;
 }
 
 /* ── Expanders ───────────────────────────────────────────────────────────── */
@@ -388,6 +402,25 @@ _CSS = """
 }
 [data-testid="stSelectbox"] div[data-baseweb] { font-family: monospace !important; }
 
+/* ── Live strip indicator ────────────────────────────────────────────────── */
+.strip-live {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: monospace;
+    font-size: 0.65rem;
+    color: rgba(0,255,157,0.7);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+.strip-live-dot {
+    width: 7px; height: 7px;
+    background: #00ff9d;
+    border-radius: 50%;
+    flex-shrink: 0;
+    animation: live-pulse 2s ease-in-out infinite;
+}
+
 /* ── Divider ─────────────────────────────────────────────────────────────── */
 hr { border-color: rgba(255,255,255,0.05) !important; margin: 20px 0 !important; }
 
@@ -416,16 +449,20 @@ def _sec(text: str) -> None:
 
 
 def _kpi(label: str, value: str, delta: str | None = None, positive: bool = True) -> str:
-    """Return an HTML KPI card string."""
-    delta_class = "kpi-delta-pos" if positive else "kpi-delta-neg"
-    delta_sign  = "+" if (positive and delta and not delta.startswith("-")) else ""
-    delta_html  = f"<div class='kpi-delta {delta_class}'>{delta_sign}{delta}</div>" if delta else ""
-    return f"""
-    <div class='kpi-card'>
-        <div class='kpi-value'>{value}</div>
-        <div class='kpi-label'>{label}</div>
-        {delta_html}
-    </div>"""
+    """Return an HTML KPI card string. Arrow direction is controlled by `positive`."""
+    if delta:
+        arrow       = "▲" if positive else "▼"
+        delta_class = "kpi-delta-pos" if positive else "kpi-delta-neg"
+        delta_html  = f"<div class='kpi-delta {delta_class}'>{arrow} {delta}</div>"
+    else:
+        delta_html = ""
+    return (
+        f"<div class='kpi-card'>"
+        f"<div class='kpi-label'>{label}</div>"
+        f"<div class='kpi-value'>{value}</div>"
+        f"{delta_html}"
+        f"</div>"
+    )
 
 
 def _empty(message: str) -> None:
@@ -591,6 +628,9 @@ def render_header(agent: str, start_date: date, end_date: date) -> None:
     st.markdown(
         f"""
         <div class='stats-strip'>
+          <div class='stat-item' style='border-right:1px solid rgba(0,255,157,0.1);padding-right:18px;'>
+            <div class='strip-live'><span class='strip-live-dot'></span>Live</div>
+          </div>
           <div class='stat-item'>
             <div class='stat-value stat-accent'>{total_runs:,}</div>
             <div class='stat-label'>Total Traces</div>
@@ -681,15 +721,11 @@ def render_traces_tab(agent: str, start_date: date, end_date: date) -> None:
     # ── Span details ──────────────────────────────────────────────────────────
     _sec("Span Details")
     for _, row in traces_df.head(6).iterrows():
-        pill_cls  = "pill-ok" if row["status"] == "OK" else "pill-err"
-        label_html = (
-            f"<span class='pill {pill_cls}'>{row['status']}</span>"
-            f"&nbsp;&nbsp;<code style='color:#6b7280;font-size:0.78rem;'>{row['trace_id'][:20]}...</code>"
-            f"&nbsp;·&nbsp;<span style='color:#9ca3af'>{row['agent']}</span>"
-            f"&nbsp;·&nbsp;<span style='color:#6b7280'>{row['latency_ms']:.0f} ms</span>"
-            f"&nbsp;·&nbsp;<span style='color:#4a5568'>R{row['cost_zar']:.4f}</span>"
+        label_txt = (
+            f"{row['status']}  ·  {row['trace_id'][:22]}...  ·  "
+            f"{row['agent']}  ·  {row['latency_ms']:.0f} ms  ·  R{row['cost_zar']:.4f}"
         )
-        with st.expander(label_html):
+        with st.expander(label_txt):
             detail = evals_db.get_spans_for_trace(row["trace_id"], DB_PATH)
             if not detail.empty:
                 st.dataframe(
